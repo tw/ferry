@@ -21,5 +21,5 @@ Some assumptions have been made when building this API.
 
 ### Running with Docker
 * `docker build -t ferry .`
-* `docker run -P3000:3000 ferry`
+* `docker run -p 3000:3000 ferry`
 * `API will be available on http://localhost:3000`
