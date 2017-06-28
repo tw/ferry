@@ -12,8 +12,14 @@ Some assumptions have been made when building this API.
 * Java 8
 * Maven
 
-### Building and running
+### Building
 * `mvn package`
+
+### Running normally (without Docker)
+* `java -jar target/ferry-standalone.jar server conf/default.yml`
+* `API will be available on http://localhost:3000`
+
+### Running with Docker
 * `docker build -t ferry .`
 * `docker run -P3000:3000 ferry`
 * `API will be available on http://localhost:3000`
