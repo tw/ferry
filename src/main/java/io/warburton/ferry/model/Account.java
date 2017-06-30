@@ -44,16 +44,19 @@ public class Account {
         }
     }
 
-    public void updateBalance(BigDecimal amount) throws UpdateBalanceException {
+    public void lock() {
         lock.writeLock().lock();
-        try {
-            if (amount.compareTo(BigDecimal.ZERO) == -1 && amount.negate().compareTo(balance) == 1) { // if lt 0 and gt balance
-                throw new UpdateBalanceException("Not enough funds available to subtract " + amount + " from " + balance);
-            } else {
-                balance = balance.add(amount);
-            }
-        } finally {
-            lock.writeLock().unlock();
+    }
+
+    public void unlock() {
+        lock.writeLock().unlock();
+    }
+
+    public void updateBalance(BigDecimal amount) throws UpdateBalanceException {
+        if (amount.compareTo(BigDecimal.ZERO) == -1 && amount.negate().compareTo(balance) == 1) { // if lt 0 and gt balance
+            throw new UpdateBalanceException("Not enough funds available to subtract " + amount + " from " + balance);
+        } else {
+            balance = balance.add(amount);
         }
     }
 

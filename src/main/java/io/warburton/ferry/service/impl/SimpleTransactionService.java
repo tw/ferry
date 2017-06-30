@@ -51,12 +51,19 @@ public final class SimpleTransactionService implements TransactionService {
             reason = TransactionStateReason.INVALID_TRANSACTION_AMOUNT;
         } else {
             try {
+                source.lock();
+                destination.lock();
+
                 source.updateBalance(amount.negate());
                 destination.updateBalance(amount);
+
                 state = CLEARED;
             } catch (UpdateBalanceException e) {
                 state = DECLINED;
                 reason = TransactionStateReason.BALANCE;
+            } finally {
+                source.unlock();
+                destination.unlock();
             }
         }
 
