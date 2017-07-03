@@ -77,17 +77,11 @@ public class Account {
 
         Account account = (Account) o;
 
-        if (id != null ? !id.equals(account.id) : account.id != null) return false;
-        if (description != null ? !description.equals(account.description) : account.description != null) return false;
-        return balance != null ? balance.equals(account.balance) : account.balance == null;
+        return id != null ? id.equals(account.id) : account.id == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (balance != null ? balance.hashCode() : 0);
-        return result;
+        return id != null ? id.hashCode() : 0;
     }
-
 }

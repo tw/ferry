@@ -35,6 +35,7 @@ public class TransactionResourceTest {
     private static final TransactionService transactionService = new SimpleTransactionService(accountService);
     private static Account source;
     private static Account destination;
+    private static Account other;
 
     @ClassRule
     public static final ResourceTestRule resources = ResourceTestRule.builder()
@@ -45,9 +46,11 @@ public class TransactionResourceTest {
     public void setup() {
         source = AccountTest.generateAccount();
         destination = AccountTest.generateAccount();
+        other = AccountTest.generateAccount();
 
         when(accountService.get(source.getId())).thenReturn(source);
         when(accountService.get(destination.getId())).thenReturn(destination);
+        when(accountService.get(other.getId())).thenReturn(other);
     }
 
     @After
@@ -100,6 +103,47 @@ public class TransactionResourceTest {
         assertEquals(badTransactionRequest.getSourceAccountId(), transaction.getSourceAccountId());
         assertEquals(badTransactionRequest.getDestinationAccountId(), transaction.getDestinationAccountId());
         assertEquals(badTransactionRequest.getAmount(), transaction.getAmount());
+    }
+
+    @Test
+    public void testConcurrency() {
+        long transactionsPerThread = 100000;
+
+        Thread t1 = createTransactionThread(source, destination, BigDecimal.valueOf(50), transactionsPerThread);
+        t1.start();
+
+        Thread t2 = createTransactionThread(destination, source, BigDecimal.valueOf(50), transactionsPerThread);
+        t2.start();
+
+        Thread t3 = createTransactionThread(destination, other, BigDecimal.valueOf(25), transactionsPerThread);
+        t3.start();
+
+        while (t1.isAlive() || t2.isAlive() || t3.isAlive()) {
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("t1: " + t1.isAlive());
+            System.out.println("t2: " + t2.isAlive());
+            System.out.println("t3: " + t3.isAlive());
+        }
+    }
+
+    private Thread createTransactionThread(Account s, Account d, BigDecimal amount, long transactionCount) {
+        return new Thread(() -> {
+            long transactions = transactionCount;
+            while (transactions > 0) {
+                TransactionRequest request = new TransactionRequest(s.getId(), d.getId(), amount);
+
+                resources.target("/transactions")
+                        .request()
+                        .post(Entity.json(request));
+
+                transactions--;
+            }
+        });
     }
 
 }
